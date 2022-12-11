@@ -106,7 +106,8 @@ pub fn App(cx: Scope) -> Element {
                                     new_state.write().metadata.has_connected = true;
                                 }
                                 _ => {
-                                    log("Assuming we're still connected, WARNING FIXME!", m).unwrap();
+                                    log(format!("Uh oh, got a message we don't understand: {}", message.ident.clone()).as_str(), m).unwrap();
+                                    log_additional("Assuming we're still connected, WARNING FIXME!").unwrap();
                                     new_state.write().client.status = KDStatus::Connected;
                                 }
                             };
@@ -229,6 +230,7 @@ fn MainScreen(cx: Scope) -> Element {
                                 tokio::time::sleep(std::time::Duration::from_millis(100)).await;
                             }
                         });
+
                         let queue_data: KDQueue = state.read().client.queue.clone();
                         let queue_name = QUEUE_MAP[&queue_data.id];
                         let queue_time = secs_to_string(*timer.current() as i16);

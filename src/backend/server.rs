@@ -77,8 +77,8 @@ async fn yellow_thread(mut rx: channel::mpsc::UnboundedReceiver<LBMessage>) {
                                 broadcast_on(clients.clone(), serde_json::to_string(&message).unwrap()).await;
                             }
                             "live/queue" => {
-                                log("Sending queue message to clients...", y).unwrap();
                                 state.lock().unwrap().client.status = KDStatus::InQueue;
+                                state.lock().unwrap().client.queue = serde_json::from_str(&message.data).unwrap();
                                 broadcast_on(clients.clone(), serde_json::to_string(&message).unwrap()).await;
                             }
 							"meta/shutdown" => {
@@ -131,10 +131,19 @@ async fn handle_request(ws: warp::ws::WebSocket, state: Arc<Mutex<KDData>>, clie
     message.r#type = LBMessageType::Update;
     message.data = String::from("{}");
 
-    match state.lock().unwrap().client.status {
+    log("Sending 'welcome' message to new client with basic state detail", Some(LogFrom::Yellow)).unwrap();
+    let state_lock = state.lock();
+    let client_status = state_lock.as_ref().unwrap().client.status;
+    drop(state_lock);
+
+    match client_status {
         KDStatus::Disconnected => message.ident = String::from("live/disconnect"),
         KDStatus::Connected => message.ident = String::from("live/connect"),
         KDStatus::ChampSelect => message.ident = String::from("live/champ-select"),
+        KDStatus::InQueue => {
+            message.ident = String::from("live/queue");
+            message.data = serde_json::to_string(&state.clone().lock().unwrap().client.queue).unwrap();
+        }
         _ => {}
     }
 
@@ -144,8 +153,8 @@ async fn handle_request(ws: warp::ws::WebSocket, state: Arc<Mutex<KDData>>, clie
         }
     }));
 
-    log("Sending 'welcome' message to new client with basic state detail", Some(LogFrom::Yellow)).unwrap();
     client_tx.unbounded_send(Ok(warp::ws::Message::text(serde_json::to_string(&message).unwrap().as_str()))).unwrap();
+    drop(message);
 
     clients.lock().unwrap().push(Client {
         sender: Some(client_tx),

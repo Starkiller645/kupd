@@ -79,7 +79,7 @@ pub enum KDLivePhase {
     Ingame,
 }
 
-#[derive(Serialize, Deserialize, Default, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Default, PartialEq, Debug, Copy, Clone)]
 pub enum KDStatus {
     #[serde(alias = "con")]
     Connected,
