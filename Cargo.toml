@@ -1,0 +1,28 @@
+[package]
+name = "kupd"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.13.1"
+chrono = "0.4.23"
+dioxus = { version = "0.2.4", features = ["desktop"] }
+dioxus-desktop = "0.2.3"
+fermi = "0.2.1"
+futures = "0.3.25"
+lazy_static = "1.4.0"
+regex = "1.7.0"
+reqwest = { version = "0.11.13", features = ["blocking", "default-tls"] }
+riven = "2.10.0"
+serde = "1.0.149"
+serde_json = "1.0.89"
+shaco = "0.5.0"
+termcolor = "1.1.3"
+tokio = { version = "1.23.0", features = ["tokio-macros", "full"] }
+tokio-core = "0.1.18"
+tokio-tungstenite = "0.18.0"
+tungstenite = "0.18.0"
+warp = "0.3.3"
+websocket = "0.26.5"

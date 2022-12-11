@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap");
+
+@font-face {
+  font-family: "LeagueGothic";
+  src: url("https://tallie.dev/kupd/assets/fonts/LeagueGothic-Regular.ttf");
+}
+
+.font-league {
+  font-family: "LeagueGothic", monospace;
+}
+
+.font-lato {
+  font-family: "Lato", sans-serif;
+}
+
+.animate-in-100 {
+  animation-name: anim-in;
+  animation-duration: 0.2s;
+  animation-delay: 1.2s;
+  animation-fill-mode: both;
+}
+
+.animate-in-50 {
+  animation-name: anim-in;
+  animation-duration: 0.2s;
+  animation-delay: 0.6s;
+  animation-fill-mode: backwards;
+}
+
+.animate-in-out-after-2 {
+  animation-name: anim-in-out;
+  animation-duration: 2.5s;
+  animation-delay: 0s;
+  animation-fill-mode: both;
+}
+
+.animate-in-after-2 {
+  animation-name: anim-in;
+  animation-delay: 2.2s;
+  animation-duration: 0.2s;
+  animation-fill-mode: backwards;
+}
+
+.animate-pulse {
+  animation-name: animate-pulse;
+  animation-duration: 2s;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes animate-pulse {
+  from {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes anim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes anim-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes anim-in-out {
+  from {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
