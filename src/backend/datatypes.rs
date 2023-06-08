@@ -32,6 +32,7 @@ pub struct KDClientMetadata {
     exit: bool,
     pub has_connected: bool,
     messages: Vec<String>,
+    pub lamb_url: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -47,23 +48,44 @@ pub struct KDClient {
     pub status: KDStatus,
     pub queue: KDQueue,
     pub champ_select: KDChampSelect,
+    pub game: KDGame,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct KDChampSelect {
-    metadata: KDChampSelectMetadata,
+    pub metadata: KDChampSelectMetadata,
     pub ally: KDChampSelectTeam,
     pub enemy: KDChampSelectTeam,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub struct KDGame {}
+pub struct KDGame {
+    pub ally: KDTeam,
+    pub enemy: KDTeam,
+    pub metadata: KDGameMetadata,
+}
 
 #[derive(Serialize, Deserialize, Debug, Default)]
+pub struct KDGameMetadata {
+    pub game_type: String,
+    pub start_time: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct KDChampSelectMetadata {
-    phase: String,
-    time: u32,
-    queue: String,
+    pub phase: KDChampSelectPhase,
+    pub time: i16,
+    pub phase_duration: i16,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub enum KDChampSelectPhase {
+    #[default]
+    Hover,
+    Ban,
+    Pick,
+    Loadout,
+    Waiting,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -98,7 +120,7 @@ pub enum KDStatus {
     InQueue,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub enum KDPosition {
     #[default]
     #[serde(alias = "top")]
@@ -113,7 +135,7 @@ pub enum KDPosition {
     Support,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub enum KDPickType {
     #[serde(alias = "pick")]
     Pick,
@@ -122,20 +144,128 @@ pub enum KDPickType {
     Ban,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct KDChampSelectPick {
     #[serde(alias = "cellID")]
-    cell_id: i8,
-    position: KDPosition,
-    #[serde(alias = "championName")]
-    pub champion_name: String,
-    r#type: KDPickType,
-    hover: bool,
-    locked: bool,
+    pub cell_id: i8,
+    pub position: KDPosition,
+    pub champion: KDChampion,
+    pub r#type: KDPickType,
+    pub hover: bool,
+    pub locked: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct KDChampion {
+    pub name: String,
+    pub title: String,
+    pub id: i16,
+    pub class: KDChampionClass,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct KDSummoner {
+    pub kills: i16,
+    pub deaths: i16,
+    pub assists: i16,
+    pub champion: KDChampion,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct KDTeam {
+    pub team: KDGameTeam,
+    pub kills: i16,
+    pub objectives: Vec<KDObjective>,
+    pub buffs: Vec<KDObjectiveBuff>,
+    pub summoners: Vec<KDSummoner>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct KDObjective {}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct KDObjectiveBuff {}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub enum KDGameTeam {
+    #[serde(alias = "ORDER")]
+    #[default]
+    Order,
+    #[serde(alias = "CHAOS")]
+    Chaos,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub enum KDChampionClass {
+    #[default]
+    Unknown,
+    Fighter,
+    Controller,
+    Mage,
+    Marksman,
+    Assassin,
+    Tank,
+    Specialist,
 }
 
 // KDChampSelect
-pub type KDChampSelectTeam = [KDChampSelectPick; 5];
+use std::collections::HashMap;
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct KDChampSelectTeam {
+    pub picks: HashMap<i16, KDChampSelectPick>,
+    pub bans: HashMap<i16, KDChampSelectPick>,
+}
 
 // All struct definitions below this are Riot DTO objects
-pub mod riot {}
+pub mod riot {
+    use serde::{Deserialize, Serialize};
+    #[derive(Serialize, Deserialize, Debug, Default)]
+    pub struct CSAction {
+        #[serde(alias = "actorCellId")]
+        pub cell_id: i16,
+        #[serde(alias = "championId")]
+        pub champion_id: i16,
+        pub completed: bool,
+        #[serde(alias = "id")]
+        pub action_id: i16,
+        #[serde(alias = "isAllyAction")]
+        pub is_ally: bool,
+        #[serde(alias = "isInProgress")]
+        pub in_progress: bool,
+        #[serde(alias = "type")]
+        pub action_type: CSActionType,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, Default)]
+    pub enum CSActionType {
+        #[serde(alias = "pick")]
+        #[default]
+        Pick,
+        #[serde(alias = "ban")]
+        Ban,
+        #[serde(alias = "ten_bans_reveal")]
+        BanReveal,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, Default)]
+    pub struct CSTimer {
+        #[serde(alias = "adjustedTimeLeftInPhase")]
+        pub time_left_ms: i64,
+        #[serde(alias = "totalTimeInPhase")]
+        pub total_time_ms: i64,
+        pub phase: CSPhase,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, Default)]
+    pub enum CSPhase {
+        #[serde(alias = "BAN_PICK")]
+        #[default]
+        PickBan,
+        #[serde(alias = "FINALIZATION")]
+        Final,
+        #[serde(alias = "PLANNING")]
+        Planning,
+        #[serde(alias = "GAME_STARTING")]
+        GameStarting,
+    }
+}

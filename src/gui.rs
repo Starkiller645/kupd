@@ -80,7 +80,12 @@ pub fn App(cx: Scope) -> Element {
                                     if new_state.read().client.status != KDStatus::ChampSelect {
                                         new_state.write().client.status = KDStatus::ChampSelect;
                                         log("Entering champ select phase...", m).unwrap();
+                                        new_state.write().client.champ_select.metadata.phase = KDChampSelectPhase::Waiting;
                                     };
+                                }
+                                "live/champ-select/update" => {
+                                    let data: KDChampSelect = serde_json::from_str(message.data.as_str()).unwrap();
+                                    new_state.write().client.champ_select = data.clone();
                                 }
                                 "live/end" => {
                                     match new_state.read().client.status {
@@ -105,6 +110,15 @@ pub fn App(cx: Scope) -> Element {
                                     log("Connected to the League Client!", m).unwrap();
                                     new_state.write().metadata.has_connected = true;
                                 }
+                                "live/await" => {
+                                    new_state.write().client.status = KDStatus::Waiting;
+                                    log("Waiting for game to start...", m).unwrap();
+                                }
+                                "live/metadata" => {
+                                    new_state.write().client.status = KDStatus::InGame;
+                                    new_state.write().client.game.metadata = serde_json::from_str(message.data.as_str()).unwrap();
+                                    log("We're now in a game, yay!", m).unwrap()
+                                }
                                 _ => {
                                     log(format!("Uh oh, got a message we don't understand: {}", message.ident.clone()).as_str(), m).unwrap();
                                     log_additional("Assuming we're still connected, WARNING FIXME!").unwrap();
@@ -123,7 +137,7 @@ pub fn App(cx: Scope) -> Element {
             }
         }
     });
-
+    
     cx.render(rsx! {
         div {
             class: "absolute inset-5 flex flex-col p-6 bg-stone-200",
@@ -133,6 +147,9 @@ pub fn App(cx: Scope) -> Element {
                 },
                 KDStatus::Disconnected | KDStatus::Connected | KDStatus::InQueue => rsx! {
                     MainScreen {}
+                },
+                KDStatus::InGame | KDStatus::Waiting => rsx! {
+                    InGame {}
                 },
                 _ => rsx! {
                     h1 {
@@ -148,27 +165,12 @@ pub fn App(cx: Scope) -> Element {
 fn MainScreen(cx: Scope) -> Element {
     let state = use_atom_ref(&cx, GLOBAL_STATE);
 
-    let loading_timer = use_state(&cx, || 0);
-    let mut timer_clone = loading_timer.clone();
-    let has_connected = use_state(&cx, || false);
-    use_coroutine(&cx, |_: UnboundedReceiver<String>| async move {
-        loop {
-            timer_clone += 1;
-            if *timer_clone.current() == 3 {
-                timer_clone -= 3;
-            }
-            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-        }
-    });
-
-
-
     cx.render(rsx! {
         div {
             class: "m-auto rounded-xl bg-stone-100 text-stone-800 text-center p-6 w-[500px]",
             h1 {
                 class: "text-9xl font-league text-yellow-700 animate-in-50",
-                "KUpD"
+                "K/DA"
             },
             match state.read().client.status {
                 KDStatus::InQueue => rsx! {
@@ -180,7 +182,7 @@ fn MainScreen(cx: Scope) -> Element {
                 _ => rsx! {
                     h2 {
                         class: "text-4xl font-league text-stone-600 animate-in-50",
-                        "Kindred Update Daemon"
+                        "Kindred Daemon"
                     }
                 }
             }
@@ -188,10 +190,6 @@ fn MainScreen(cx: Scope) -> Element {
                 class: "font-lato animate-in-100",
                 match state.read().client.status {
                     KDStatus::Disconnected => {
-                        let mut loading_text = String::from("");
-                        for i in 0..*loading_timer.current() + 1 {
-                            loading_text += ".";
-                        }
                         rsx! {
                             p {
                                 class: "pt-2 text-xl text-stone-500 font-lato animate-in-100 animate-pulse",
@@ -259,7 +257,7 @@ fn MainScreen(cx: Scope) -> Element {
                     }
                     _ => rsx! {
                         p {
-                                class: "pt-2 text-xl font-lato animate-pulse mx-auto",
+                                class: "pt-2 text-xl font-lato mx-auto animate-pulse",
                             "Waiting for Champ Select"
                         }
                         p {
@@ -277,15 +275,142 @@ fn MainScreen(cx: Scope) -> Element {
     })
 }
 
+fn InGame(cx: Scope) -> Element {
+    let state = use_atom_ref(&cx, GLOBAL_STATE);
+    cx.render(rsx! {
+        match state.read().client.status {
+            KDStatus::Waiting => rsx! {
+                h1 {
+                    class: "text-6xl font-league text-yellow-700",
+                    "Waiting for game to load..."
+                }
+            },
+            KDStatus::InGame => {
+                let queue_type = state.read().client.game.metadata.game_type.clone();
+                let time_state = use_state(&cx, || String::from("--:--"));
+                let time_clone = time_state.clone();
+                let state_clone = state.clone();
+                use_coroutine(&cx, |_: UnboundedReceiver<String>| async move {
+                    loop {
+                        let time_now = chrono::Local::now().timestamp();
+                        let elapsed_seconds = time_now - state_clone.read().client.game.metadata.start_time;
+                        let time = secs_to_string(elapsed_seconds as i16);
+                        time_clone.set(time);
+                        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+                    }
+                });
+                rsx! {
+                    div {
+                        class: "mx-auto text-center animate-in-50",
+                        h1 {
+                            class: "text-6xl font-league text-yellow-700",
+                            "In Game"
+                        },
+                        h3 {
+                            class: "text-2xl font-league text-stone-600",
+                            "{queue_type}"
+                        },
+                        p {
+                            class: "font-lato font-bold text-yellow-700",
+                            "{time_state}"
+                        }
+                    }
+                }
+            },
+            _ => rsx! {
+                "Uh oh D:"
+            }
+        }
+    })
+}
+
 fn ChampSelect(cx: Scope) -> Element {
-    let state_read = use_read(&cx, GLOBAL_STATE);
+    let state = use_atom_ref(&cx, GLOBAL_STATE);
     cx.render(rsx! {
         div {
-            class: "w-full h-full rounded-xl bg-stone-100 p-6",
+            class: "w-full h-full rounded-xl bg-stone-100 p-6 pt-0",
             h1 {
-                class: "font-league text-yellow-700 text-9xl",
+                class: "pt-0 rounded-xl-bottom font-league text-yellow-700 text-9xl bg-stone-200 pb-4 mx-auto w-fit px-4 mb-6",
                 "Champ Select"
             },
+
+            match state.read().client.champ_select.metadata.phase {
+                KDChampSelectPhase::Waiting => rsx! {
+                    p {
+                        class: "font-league text-stone-600 text-4xl",
+                        "Waiting..."
+                    }
+                },
+                KDChampSelectPhase::Pick | KDChampSelectPhase::Ban => {
+                    let mut ally_picks_vec: Vec<(i16, KDChampSelectPick)> = state.read().client.champ_select.ally.picks.clone().into_iter().collect();
+                    ally_picks_vec.sort_by_key(|a| a.0);
+                    let mut enemy_picks_vec: Vec<(i16, KDChampSelectPick)> = state.read().client.champ_select.enemy.picks.clone().into_iter().collect();
+                    enemy_picks_vec.sort_by_key(|a| a.0);
+                    rsx! {
+                        div {
+                            class: "flex",
+                            div {
+                                class: "text-left font-lato text-stone-600 flex-col flex w-auto grow",
+                                    ally_picks_vec.iter().map(|pick| {
+                                        let mut champ_name_lowercase = pick.1.champion.name.to_lowercase();
+                                        champ_name_lowercase = champ_name_lowercase.replace(['-', '\'', ' ', '.'], "");
+                                        rsx!{
+                                            li {
+                                                class: "flex",
+                                                key: "{pick.1.cell_id}",
+                                                    img {
+                                                        class: "rounded-full h-16 object-center object-none p-2",
+                                                        src: "https://tallie.dev/kupd/assets/champions/{champ_name_lowercase}.png"
+                                                    }
+                                                    div {
+                                                        class: "flex-col",
+                                                        h3 {
+                                                            class: "font-league text-6xl text-yellow-700",
+                                                            "{pick.1.champion.name} {pick.1.cell_id}"
+                                                        },
+                                                        p {
+                                                            "{pick.1.champion.title}"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        })
+                            },
+                            div {
+                                class: "text-right font-lato text-stone-600 flex-col flex w-auto grow ml-auto",
+                                    enemy_picks_vec.iter().map(|pick| {
+                                        let mut champ_name_lowercase = pick.1.champion.name.to_lowercase();
+                                        champ_name_lowercase = champ_name_lowercase.replace(['-', '\'', ' ', '.'], "");
+                                        rsx!{
+                                            li {
+                                                class: "flex flex-row justify-end",
+                                                key: "{pick.1.cell_id}",
+                                                    div {
+                                                        class: "flex-col",
+                                                        h3 {
+                                                            class: "font-league text-6xl text-yellow-700",
+                                                            "{pick.1.champion.name} {pick.1.cell_id}"
+                                                        },
+                                                        p {
+                                                            "{pick.1.champion.title}"
+                                                        }
+                                                    }
+                                                img {
+                                                        class: "rounded-full h-16 object-center object-none p-2",
+                                                        src: "https://tallie.dev/kupd/assets/champions/{champ_name_lowercase}.png"
+                                                    }
+                                                }
+                                            }
+                                        })
+                            }
+                        }
+                    } //END OF RSX
+                },
+                _ => rsx! { p {
+                    "Uh oh, not sure what happened here!"
+                } }
+            }
+
             p {
                 class: "font-league text-stone-600 text-4xl",
                 "Not Implemented Yet!"

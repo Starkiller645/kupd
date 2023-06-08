@@ -1,5 +1,5 @@
 /*
-! tailwindcss v3.2.4 | MIT License | https://tailwindcss.com
+! tailwindcss v3.3.2 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -31,6 +31,7 @@
 3. Use a more readable tab size.
 4. Use the user's configured `sans` font-family by default.
 5. Use the user's configured `sans` font-feature-settings by default.
+6. Use the user's configured `sans` font-variation-settings by default.
 */
 
 html {
@@ -47,6 +48,8 @@ html {
   /* 4 */
   font-feature-settings: normal;
   /* 5 */
+  font-variation-settings: normal;
+  /* 6 */
 }
 
 /*
@@ -433,6 +436,9 @@ video {
   --tw-pan-y:  ;
   --tw-pinch-zoom:  ;
   --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
   --tw-ordinal:  ;
   --tw-slashed-zero:  ;
   --tw-numeric-figure:  ;
@@ -480,6 +486,9 @@ video {
   --tw-pan-y:  ;
   --tw-pinch-zoom:  ;
   --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
   --tw-ordinal:  ;
   --tw-slashed-zero:  ;
   --tw-numeric-figure:  ;
@@ -526,10 +535,7 @@ video {
 }
 
 .inset-5 {
-  top: 1.25rem;
-  right: 1.25rem;
-  bottom: 1.25rem;
-  left: 1.25rem;
+  inset: 1.25rem;
 }
 
 .top-0 {
@@ -545,8 +551,20 @@ video {
   margin-right: auto;
 }
 
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
 .flex {
   display: flex;
+}
+
+.h-16 {
+  height: 4rem;
 }
 
 .h-full {
@@ -557,8 +575,21 @@ video {
   width: 500px;
 }
 
+.w-auto {
+  width: auto;
+}
+
+.w-fit {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+
 .w-full {
   width: 100%;
+}
+
+.grow {
+  flex-grow: 1;
 }
 
 @keyframes pulse {
@@ -571,17 +602,24 @@ video {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+.flex-row {
+  flex-direction: row;
+}
+
 .flex-col {
   flex-direction: column;
 }
 
-.rounded-xl {
-  border-radius: 0.75rem;
+.justify-end {
+  justify-content: flex-end;
 }
 
-.bg-stone-200 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(231 229 228 / var(--tw-bg-opacity));
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.rounded-xl {
+  border-radius: 0.75rem;
 }
 
 .bg-stone-100 {
@@ -589,16 +627,71 @@ video {
   background-color: rgb(245 245 244 / var(--tw-bg-opacity));
 }
 
+.bg-stone-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(231 229 228 / var(--tw-bg-opacity));
+}
+
+.object-none {
+  -o-object-fit: none;
+     object-fit: none;
+}
+
+.object-center {
+  -o-object-position: center;
+     object-position: center;
+}
+
+.p-2 {
+  padding: 0.5rem;
+}
+
 .p-6 {
   padding: 1.5rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.pb-4 {
+  padding-bottom: 1rem;
+}
+
+.pt-0 {
+  padding-top: 0px;
 }
 
 .pt-2 {
   padding-top: 0.5rem;
 }
 
+.text-left {
+  text-align: left;
+}
+
 .text-center {
   text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
 }
 
 .text-6xl {
@@ -611,9 +704,9 @@ video {
   line-height: 1;
 }
 
-.text-4xl {
-  font-size: 2.25rem;
-  line-height: 2.5rem;
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
 }
 
 .text-xl {
@@ -621,23 +714,38 @@ video {
   line-height: 1.75rem;
 }
 
-.text-lg {
-  font-size: 1.125rem;
-  line-height: 1.75rem;
-}
-
-.text-3xl {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
-}
-
 .font-bold {
   font-weight: 700;
+}
+
+.text-green-600 {
+  --tw-text-opacity: 1;
+  color: rgb(22 163 74 / var(--tw-text-opacity));
 }
 
 .text-red-500 {
   --tw-text-opacity: 1;
   color: rgb(239 68 68 / var(--tw-text-opacity));
+}
+
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity));
+}
+
+.text-stone-100 {
+  --tw-text-opacity: 1;
+  color: rgb(245 245 244 / var(--tw-text-opacity));
+}
+
+.text-stone-500 {
+  --tw-text-opacity: 1;
+  color: rgb(120 113 108 / var(--tw-text-opacity));
+}
+
+.text-stone-600 {
+  --tw-text-opacity: 1;
+  color: rgb(87 83 78 / var(--tw-text-opacity));
 }
 
 .text-stone-800 {
@@ -650,137 +758,6 @@ video {
   color: rgb(161 98 7 / var(--tw-text-opacity));
 }
 
-.text-stone-600 {
-  --tw-text-opacity: 1;
-  color: rgb(87 83 78 / var(--tw-text-opacity));
-}
-
-.text-stone-500 {
-  --tw-text-opacity: 1;
-  color: rgb(120 113 108 / var(--tw-text-opacity));
-}
-
-.text-stone-100 {
-  --tw-text-opacity: 1;
-  color: rgb(245 245 244 / var(--tw-text-opacity));
-}
-
-.text-red-700 {
-  --tw-text-opacity: 1;
-  color: rgb(185 28 28 / var(--tw-text-opacity));
-}
-
-.text-green-600 {
-  --tw-text-opacity: 1;
-  color: rgb(22 163 74 / var(--tw-text-opacity));
-}
-
 .opacity-0 {
   opacity: 0;
-}
-
-@font-face {
-  font-family: "LeagueGothic";
-
-  src: url("https://tallie.dev/kupd/assets/fonts/LeagueGothic-Regular.ttf");
-}
-
-.font-league {
-  font-family: "LeagueGothic", monospace;
-}
-
-.font-lato {
-  font-family: "Lato", sans-serif;
-}
-
-.animate-in-100 {
-  animation-name: anim-in;
-  animation-duration: 0.2s;
-  animation-delay: 1.2s;
-  animation-fill-mode: both;
-}
-
-.animate-in-50 {
-  animation-name: anim-in;
-  animation-duration: 0.2s;
-  animation-delay: 0.6s;
-  animation-fill-mode: backwards;
-}
-
-.animate-in-out-after-2 {
-  animation-name: anim-in-out;
-  animation-duration: 2.5s;
-  animation-delay: 0s;
-  animation-fill-mode: both;
-}
-
-.animate-in-after-2 {
-  animation-name: anim-in;
-  animation-delay: 2.2s;
-  animation-duration: 0.2s;
-  animation-fill-mode: backwards;
-}
-
-.animate-pulse {
-  animation-name: animate-pulse;
-  animation-duration: 2s;
-  animation-delay: 0s;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
-}
-
-@keyframes animate-pulse {
-  from {
-    opacity: 1;
-  }
-
-  80% {
-    opacity: 1;
-  }
-
-  90% {
-    opacity: 0.4;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes anim-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes anim-out {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes anim-in-out {
-  from {
-    opacity: 0;
-  }
-
-  8% {
-    opacity: 1;
-  }
-
-  92% {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
 }
